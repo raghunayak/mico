@@ -1,0 +1,150 @@
+
+
+Frequently Asked Questions About MICO
+
+
+Q:  During compilation my gcc dies with an
+    "internal compiler error". What is going wrong?
+A:  Some Linux distributions are coming with a broken version of
+  gcc that calls itself gcc 2.96. You will have to "downgrade" to gcc
+  2.95.x. See below for a note on gcc 3.0.
+
+
+
+Q:  MICO seems to compile, but then the IDL compiler crashes.
+    What is going wrong?
+A:  This is an error you are likely to experience with gcc 3.0. This
+  gcc version is buggy, resulting in wrong code. You cannot use MICO with
+  gcc 3.0. Bug reports have been filed with the gcc database. At the moment,
+  you will have to downgrade to gcc 2.95.x.
+
+
+
+Q:  gcc still dies with an "internal compiler error".
+A:  You are encouraged to submit a bug report to the appropriate
+  compiler's mailing list. In the meantime, disabling optimization
+  usually works.
+
+  
+     ./configure --disable-optimize
+  
+
+
+
+Q:  During compilation gcc dies with a "virtual memory
+    exhausted" error.  What can I do?
+
+A:  Add more swap space. Under Linux you can simply create a
+  swap file:
+  
+  
+     su
+     dd if=/dev/zero of=/tmp/swapfile bs=1024 count=64000
+     mkswap /tmp/swapfile
+     swapon /tmp/swapfile
+  
+
+  There are similar ways for other unix flavors. Ask your sys admin.
+  If for some reason you cannot add more swap space, try turning off
+  optimization by rerunning configure: ./configure
+    --disable-optimize.
+
+  We recommend at least 64 Megabytes of physical memory for compiling
+  MICO or for development based on MICO. Ready-to-run MICO applications
+  have a much smaller memory footprint.
+
+
+
+Q:  I'm using gcc. Compliation aborts with an error message
+  from the assembler (as) such as
+  
+     /usr/ccs/bin/as: error: can't compute value of an expression
+     involving an external symbol
+  
+
+A:  This is a bug in the assember which cannot handle long symbol
+  names. The preferred solution is to install the GNU assembler (from the
+  binutils package). In the meantime, you can try to enable debugging
+
+  
+     ./configure --enable-debug
+  
+
+  You can also try to use MICO's lightweight MiniSTL package instead of
+  your system's STL library:
+
+  
+     ./configure --enable-mini-stl
+  
+
+
+
+Q:  Why do MICO programs fail with a COMM_FAILURE
+    exception when running on `localhost'?
+A:  Because MICO requires using your `real' host name. Never use
+    `localhost' in an address specification.
+
+
+
+Q:  MICO programs crash. Why?
+  
+A:  There is no easy answer (what did you expect?). But often
+  this is caused by linking in wrong library versions. For example
+  people often install egcs as a second compiler in their system and
+  set PATH such that egcs will be picked. But that is not enough: You
+  have to make sure that gcc's C++ libraries (esp. libstdc++) will be
+  linked in. One way to make MICO use a gcc installed in
+  /usr/local/gcc is:
+
+  
+     export PATH=/usr/local/gcc/bin:$PATH
+     export CXXFLAGS=-L/usr/local/gcc/lib
+     export LD_LIBRARY_PATH=/usr/local/gcc/lib:$LD_LIBRARY_PATH
+     ./configure
+  
+  
+  If that is not the cause you probably found a bug in MICO. Write a
+  mail to mico@vsb.cs.uni-frankfurt.de containing a
+  description of the problem, along with
+
+  
+  - the MICO version (make sure it is the latest by visiting
+       http://www.mico.org/)
+  - the operating system you are running on
+  - the hardware you are running on
+  - the compiler type and version you are using
+  - a stack trace
+  - To get a stack trace run the offending program in the
+    debugger:
+    
+      gdb <prog>
+      (gdb) run <args>
+      program got signal ???
+      (gdb) backtrace
+    
+    and include the output in your mail.
+  
+
+
+
+Q:  After creating Implementation Repository entries with
+    imr create imr list does not show the newly created entries. What
+    is going wrong?
+  
+A:  You must tell imr where micod is running,
+  otherwise imr will create its own implementation repository which is
+  destroyed when imr exits. You tell imr the location of the
+  implementation repository by using the -ORBImplRepoAddr
+  option, e.g.:
+  
+     micod -ORBIIOPAddr inet:jade:4242 &
+     imr -ORBImplRepoAddr inet:jade:4242
+  
+
+
+
+Q:  Why don't exceptions work on Linux?
+A:  They do. You are experiencing a bug in the
+  assembler. Upgrade to binutils-2.8.1.0.15 or newer and recompile
+  MICO.
+
